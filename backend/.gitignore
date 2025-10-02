@@ -1,0 +1,5 @@
+# Ollama data directory
+ollama_data/
+
+# Docker volumes
+data/
