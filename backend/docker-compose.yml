@@ -1,10 +1,22 @@
 version: '3'
+
 services:
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ollama
     ports:
       - "11434:11434"
     volumes:
       - ./ollama_data:/root/.ollama
-    restart: unless-stopped
+    restart: on-failure:5
+    environment:
+      - OLLAMA_INSECURE=true
+      - SSL_CERT_FILE=/dev/null
+      - NO_PROXY=localhost,127.0.0.1
+    # Add some resource limits to prevent excessive usage
+    deploy:
+      resources:
+        limits:
+          memory: 8G
