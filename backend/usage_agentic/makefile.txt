@@ -1,0 +1,153 @@
+.PHONY: help build up down restart logs shell pull-model list-models test clean backup restore setup
+
+# Default target
+help:
+	@echo "Ollama + Zscaler Docker Management"
+	@echo "=================================="
+	@echo ""
+	@echo "Available commands:"
+	@echo "  make setup        - Run initial setup (recommended first step)"
+	@echo "  make build        - Build Docker images"
+	@echo "  make up           - Start services"
+	@echo "  make down         - Stop services"
+	@echo "  make restart      - Restart services"
+	@echo "  make logs         - View logs"
+	@echo "  make shell        - Open shell in ollama container"
+	@echo "  make pull-model   - Pull a model (usage: make pull-model MODEL=llama3.2)"
+	@echo "  make list-models  - List all available models"
+	@echo "  make test         - Test API connection"
+	@echo "  make clean        - Remove containers and volumes"
+	@echo "  make backup       - Backup ollama data"
+	@echo "  make restore      - Restore ollama data"
+	@echo ""
+
+# Run initial setup
+setup:
+	@chmod +x setup.sh
+	@./setup.sh
+
+# Build images
+build:
+	docker compose build
+
+# Start services
+up:
+	docker compose up -d
+	@echo "Waiting for services to start..."
+	@sleep 5
+	@docker compose ps
+
+# Stop services
+down:
+	docker compose down
+
+# Restart services
+restart: down up
+
+# View logs
+logs:
+	docker compose logs -f
+
+# Open shell in ollama container
+shell:
+	docker exec -it ollama-zscaler bash
+
+# Pull a model
+pull-model:
+	@if [ -z "$(MODEL)" ]; then \
+		echo "Usage: make pull-model MODEL=llama3.2"; \
+		exit 1; \
+	fi
+	docker exec ollama-zscaler ollama pull $(MODEL)
+
+# List models
+list-models:
+	@echo "Available models:"
+	@docker exec ollama-zscaler ollama list
+
+# Test API connection
+test:
+	@echo "Testing Ollama API..."
+	@curl -s http://localhost:11434/api/version | python3 -m json.tool || echo "Failed to connect"
+	@echo ""
+	@echo "Testing Web UI..."
+	@curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:3000
+
+# Clean everything (WARNING: removes all data)
+clean:
+	@echo "WARNING: This will remove all containers, volumes, and downloaded models!"
+	@read -p "Are you sure? [y/N] " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		docker compose down -v; \
+		echo "Cleaned up successfully"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# Backup ollama data
+backup:
+	@echo "Creating backup..."
+	@mkdir -p backups
+	@docker run --rm -v ollama_data:/data -v $$(pwd)/backups:/backup \
+		ubuntu tar czf /backup/ollama_backup_$$(date +%Y%m%d_%H%M%S).tar.gz -C /data .
+	@echo "Backup created in backups/ directory"
+
+# Restore ollama data from backup
+restore:
+	@if [ -z "$(BACKUP)" ]; then \
+		echo "Usage: make restore BACKUP=backups/ollama_backup_YYYYMMDD_HHMMSS.tar.gz"; \
+		echo "Available backups:"; \
+		ls -1 backups/*.tar.gz 2>/dev/null || echo "  No backups found"; \
+		exit 1; \
+	fi
+	@echo "Restoring from $(BACKUP)..."
+	@docker run --rm -v ollama_data:/data -v $$(pwd)/backups:/backup \
+		ubuntu tar xzf /backup/$$(basename $(BACKUP)) -C /data
+	@echo "Restore completed"
+
+# Install Python dependencies
+install-python:
+	pip install -r requirements.txt
+
+# Run Python example
+run-example: install-python
+	python3 example_usage.py
+
+# Check system requirements
+check-requirements:
+	@echo "Checking system requirements..."
+	@command -v docker >/dev/null 2>&1 && echo "✓ Docker installed" || echo "✗ Docker not found"
+	@docker compose version >/dev/null 2>&1 && echo "✓ Docker Compose installed" || echo "✗ Docker Compose not found"
+	@command -v python3 >/dev/null 2>&1 && echo "✓ Python 3 installed" || echo "✗ Python 3 not found"
+	@command -v nvidia-smi >/dev/null 2>&1 && echo "✓ NVIDIA GPU detected" || echo "⚠ NVIDIA GPU not detected (CPU mode)"
+	@echo ""
+	@echo "Certificate check:"
+	@[ -f zscaler.crt ] && echo "✓ zscaler.crt found" || echo "⚠ zscaler.crt not found (will use automated installer)"
+
+# Show running services
+status:
+	@docker compose ps
+	@echo ""
+	@echo "Ollama API: http://localhost:11434"
+	@echo "Web UI: http://localhost:3000"
+
+# Update images
+update:
+	docker compose pull
+	docker compose up -d
+	@echo "Services updated and restarted"
+
+# LangGraph Agent Commands
+setup-langgraph:
+	@chmod +x setup_langgraph.sh
+	@./setup_langgraph.sh
+
+run-agent:
+	@python langgraph_agent.py
+
+run-examples:
+	@python langgraph_examples.py
+
+test-agent:
+	@python -c "from langgraph_agent import OllamaAgent; OllamaAgent().run('Calculate 10 * 10')"
