@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Ollama data directory
+ollama_data/
+zscaler_ollama_data/ # Updated to reflect new volume name
+
+# Docker volumes
+data/
