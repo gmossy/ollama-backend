@@ -173,9 +173,12 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Ollama data directory
-ollama_data/
-zscaler_ollama_data/ # Updated to reflect new volume name
-
-# Docker volumes
-data/
+# Ollama data volume
+zscaler_ollama_data/
+ollama_data/ # <--- Make sure this line is present if you want to remove it
+    
+# Zscaler root certificate (DO NOT COMMIT THIS)
+zscaler-root-ca.crt
+    
+# Python virtual environment
+.venv/
