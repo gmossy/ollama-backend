@@ -1,22 +1,33 @@
 version: '3'
 
 services:
-  ollama:
+  zscaler-ollama: # Changed service name
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ollama
+    container_name: zscaler-ollama # Consistent container name
     ports:
       - "11434:11434"
     volumes:
-      - ./ollama_data:/root/.ollama
-    restart: on-failure:5
+      - zscaler_ollama_data:/root/.ollama # Changed volume name
+      # - ./zscaler-root-ca.crt:/usr/local/share/ca-certificates/zscaler-root-ca.crt:ro
+    restart: unless-stopped
     environment:
+      - OLLAMA_HOST=0.0.0.0
+      # For Python applications using Ollama
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      # For Node.js applications
+      - NODE_OPTIONS=--use-openssl-ca
+      # Keep these as a fallback if certificate installation fails
       - OLLAMA_INSECURE=true
       - SSL_CERT_FILE=/dev/null
+      - GIT_SSL_NO_VERIFY=true
       - NO_PROXY=localhost,127.0.0.1
-    # Add some resource limits to prevent excessive usage
     deploy:
       resources:
         limits:
           memory: 8G
+
+volumes:
+  zscaler_ollama_data: # Define the named volume
+    driver: local

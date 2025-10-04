@@ -1,5 +1,8 @@
 # Ollama data directory
-ollama_data/
+zscaler_ollama_data/
 
 # Docker volumes
 data/
+
+# Zscaler root certificate (if you don't want to commit it)
+# zscaler-root-ca.crt
