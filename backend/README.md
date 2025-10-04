@@ -185,6 +185,45 @@ For detailed information on what Ollama is, how this Docker setup works, why Zsc
 
 ---
 
-## Other Projects (Placeholder)
+feat(ollama): Implement zscaler-ollama Docker setup for DPG AI projects
 
-This section will be updated as more DPG AI projects are added to the repository.
+This commit introduces a robust, Dockerized Ollama environment (`zscaler-ollama`) tailored for use within corporate networks employing TLS/SSL inspection (e.g., Zscaler), making it suitable for the Digital Proving Ground (DPG) project.
+
+Key Features & Improvements:
+
+-   **Ollama Dockerization**: Established a `backend/` directory containing `docker-compose.yml`, `Dockerfile`, and `Makefile` for consistent and reproducible Ollama deployments.
+-   **Zscaler Certificate Handling**:
+    -   Implemented a `generate-cert.sh` script to extract Zscaler root certificates from macOS keychains (or create placeholders).
+    -   Modified `Dockerfile` to copy `zscaler-root-ca.crt` during image build and run `update-ca-certificates` for trusted TLS connections within the container.
+    -   Configured `OLLAMA_INSECURE`, `SSL_CERT_FILE`, `GIT_SSL_NO_VERIFY`, `CURL_CA_BUNDLE`, and `NO_PROXY` environment variables as fallbacks to bypass strict certificate validation at runtime, ensuring model downloads and API calls function reliably in proxy environments.
+-   **Makefile for Simplified Management**:
+    -   Introduced a comprehensive `Makefile` in `backend/` with targets for `build`, `up`, `down`, `restart`, `clean`, `prune`, `status`, `pull-models`, `pull-models-ci`, and `update-models`.
+    -   Created a `setup` target to automate the entire onboarding process: certificate generation, Docker cleanup, build, container startup, and initial LLM model pulls.
+-   **Container Renaming**: Standardized the Ollama service and container name to `zscaler-ollama` across `docker-compose.yml` and `Makefile` for clarity.
+-   **Python Usage and Testing Scripts**:
+    -   Added `backend/usage/` directory with `ollama_service.py` to provide a reusable Python client for structured (JSON) Ollama API interactions.
+    -   Included `test_ollama.py` to demonstrate querying Ollama for structured responses with various prompts (e.g., Docker explanation, LLM features, DPG definition).
+    -   Provided instructions for setting up Python virtual environments with `uv` and installing `ollama-python`.
+-   **Troubleshooting Script**: Developed `backend/troubleshoot.sh` to provide a quick checklist for verifying Docker, API, and model status, including automated container startup attempts and clear resolution guidance.
+-   **Comprehensive Documentation (`README.md`)**:
+    -   Updated the root `DPGAI/README.md` to provide a high-level overview and direct users to the backend-specific documentation.
+    -   Extensively revised `DPGAI/backend/README.md` with:
+        -   Detailed explanations of Ollama and the `zscaler-ollama` Docker setup.
+        -   In-depth rationale for Zscaler's role and associated challenges.
+        -   Clear benefits for the Digital Proving Ground project.
+        -   Updated "Getting Started" instructions, troubleshooting guides, and Makefile usage.
+        -   Added a note regarding macOS GPU limitations for Docker containers.
+-   **Makefile Enhancements**:
+    -   Added `gpt-oss:20b`, `gemma3:12b`, and `qwen3` to the initial models pulled by `make setup`.
+    -   Fixed shell path issues in `Makefile` targets when referencing `generate-cert.sh`.
+    -   Improved robustness of `prune` target.
+-   **Script Fixes**:
+    -   Resolved multiple `IndentationError` issues in Python usage scripts.
+    -   Fixed `ModuleNotFoundError` by guiding `uv pip install ollama`.
+    -   Corrected container name references in `quick_test_script.sh`.
+    -   Fixed `bad substitution` error in `quick_test_script.sh` by using `printf` for string repetition.
+    -   Resolved `quick_test_script.sh` hanging issues by piping prompts to `ollama run`.
+    -   Refined JSON parsing logic and `ollama list` output interpretation in `troubleshoot.sh`.
+    -   Updated terminology from "DPG-Ollama" to "Zscaler-Ollama" in `troubleshoot.sh` for consistency.
+
+This work significantly improves the ease of use, maintainability, and enterprise network compatibility of the Ollama setup for DPG AI development.
