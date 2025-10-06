@@ -1,6 +1,6 @@
-# DPG AI Projects
+# Ollama Projects
 
-This repository contains AI-related projects for the Digital Proving Ground (DPG).
+This repository contains a Docker for Ollama LLM Setup
 
 ## Backend: `zscaler-ollama` Docker Setup
 
@@ -8,12 +8,9 @@ The `backend/` directory contains a Dockerized setup for running the Ollama Larg
 
 For detailed information on what Ollama is, how this Docker setup works, why Zscaler is relevant, and comprehensive instructions for building, running, and managing the `zscaler-ollama` container and its models, please refer to the dedicated README:
 
-➡️ **[DPGAI Backend: `zscaler-ollama` Docker Setup README](backend/README.md)**
+➡️ **[ Backend: `zscaler-ollama` Docker Setup README](backend/README.md)**
 
 ---
 
-## Other Projects (Placeholder)
-
-This section will be updated as more DPG AI projects are added to the repository.
 
 
