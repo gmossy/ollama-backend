@@ -1,0 +1,53 @@
+.PHONY: help build up down restart pull-models list-models logs clean status
+
+DOCKER_COMPOSE = docker compose -f docker-compose.local.yml
+CONTAINER_NAME = ollama-local
+
+help:
+	@echo "Local Ollama Makefile commands:"
+	@echo "  build        - Build the Docker image"
+	@echo "  up           - Start the $(CONTAINER_NAME) container"
+	@echo "  down         - Stop the $(CONTAINER_NAME) container"
+	@echo "  restart      - Restart the $(CONTAINER_NAME) container"
+	@echo "  pull-models  - Pull specified models (e.g., make pull-models MODELS='llama3 mistral')"
+	@echo "  list-models  - List all available models"
+	@echo "  logs         - View container logs"
+	@echo "  clean        - Remove containers and volumes"
+	@echo "  status       - Show status of the $(CONTAINER_NAME) container"
+
+build:
+	$(DOCKER_COMPOSE) build
+
+up:
+	$(DOCKER_COMPOSE) up -d
+
+down:
+	$(DOCKER_COMPOSE) down
+
+restart: down up
+
+pull-models:
+	@if [ -z "$(MODELS)" ]; then \
+		echo "Please specify models to pull, e.g., make pull-models MODELS='llama3 mistral'"; \
+	else \
+		for model in $(MODELS); do \
+			echo "Pulling $$model..."; \
+			docker exec -it $(CONTAINER_NAME) ollama pull $$model; \
+		done; \
+	fi
+
+list-models:
+	docker exec -it $(CONTAINER_NAME) ollama list
+
+logs:
+	$(DOCKER_COMPOSE) logs -f
+
+clean:
+	$(DOCKER_COMPOSE) down -v
+
+status:
+	@echo "Container status:"
+	@docker ps -a --filter name=$(CONTAINER_NAME)
+	@echo ""
+	@echo "API health check:"
+	@curl -s http://localhost:11434/api/version || echo "API not responding"
