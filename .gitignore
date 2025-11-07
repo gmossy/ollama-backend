@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+*.log
+
+# Local data and caches
+ollama_data/
+.env.local
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Virtual environments
+.venv

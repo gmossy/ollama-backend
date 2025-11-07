@@ -1,0 +1,39 @@
+services:
+
+  ollama:
+
+    image: ollama/ollama:latest
+
+    container_name: ollama-local
+
+    ports:
+
+      - "11434:11434"
+
+    volumes:
+
+      - ollama_data:/root/.ollama
+
+    restart: unless-stopped
+
+    environment:
+
+      - OLLAMA_HOST=0.0.0.0
+
+    deploy:
+
+      resources:
+
+        limits:
+
+          memory: 8G
+
+    healthcheck:
+
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+
+      interval: 30s
+
+volumes:
+  ollama_data:
+    driver: local
