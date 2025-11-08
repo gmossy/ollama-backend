@@ -20,6 +20,8 @@ services:
 
       - OLLAMA_HOST=0.0.0.0
 
+    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 10 && ollama pull gemma3:4b && ollama pull llama3 && ollama pull qwen3-vl:latest && wait"]
+
     deploy:
 
       resources:
